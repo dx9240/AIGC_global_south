@@ -3,6 +3,7 @@ import os
 from google import genai
 from openai import OpenAI
 import base64
+import json
 
 load_dotenv()
 openAI_api_key = os.getenv("OPENAI_API_KEY")
@@ -26,6 +27,32 @@ artwork = r"C:\Users\at1e18\OneDrive - University of Southampton\Documents\Lesia
 # print(response.text)
 
 #Use GPT
+# log_file_openai = "openai_log_file.jsonl"
+# with open(log_file_openai, "a") as f:
+#     f.write()
+
+#function to log LLM output
+def log_openai_response(response, system_prompt, system_prompt_version, user_prompt, user_prompt_version, image_path, notes=""):
+    log_entry = {
+        "response_id": response.id,
+        "model": response.model,
+        "system_prompt_version": system_prompt_version,
+        "system_prompt": system_prompt,
+        "user_prompt_version": user_prompt_version,
+        "user_prompt": user_prompt,
+        "output_text": response.output[0].content[0].text,
+        "temperature": response.temperature,
+        "top_p": response.top_p,
+        "image_path": image_path,
+        "notes": notes,
+        "timestamp": response.created_at,
+        "max_tokens": response.max_output_tokens,
+        "input_tokens": response.usage.input_tokens,
+        "output_tokens": response.usage.output_tokens,
+        "total_tokens": response.usage.total_tokens,
+    }
+    return log_entry
+
 #open image
 with open(artwork, "rb") as img_file:
     image_bytes = img_file.read()
@@ -48,4 +75,5 @@ response = client.responses.create(
 )
 
 # Output result
-print(response.output_text)
+#print(response.output_text)
+print(log_openai_response(response, initial_system_prompt, "SP1", "Please analyze this image.", "UP1", artwork))
