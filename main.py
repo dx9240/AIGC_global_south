@@ -26,12 +26,8 @@ artwork = r"C:\Users\at1e18\OneDrive - University of Southampton\Documents\Lesia
 #
 # print(response.text)
 
-#Use GPT
-# log_file_openai = "openai_log_file.jsonl"
-# with open(log_file_openai, "a") as f:
-#     f.write()
-
 #function to log LLM output
+#cosine similarity...an idea for later...
 def log_openai_response(response, system_prompt, system_prompt_version, user_prompt, user_prompt_version, image_path, notes=""):
     log_entry = {
         "response_id": response.id,
@@ -76,4 +72,10 @@ response = client.responses.create(
 
 # Output result
 #print(response.output_text)
-print(log_openai_response(response, initial_system_prompt, "SP1", "Please analyze this image.", "UP1", artwork))
+log_data = (log_openai_response(response, initial_system_prompt, "SP1", "Please analyze this image.", "UP1", artwork))
+
+#Use GPT
+log_file_openai = "openai_log_file.jsonl"
+with open(log_file_openai, "a", encoding="utf-8") as f:
+    f.write(json.dumps(log_data)+ "\n")
+
