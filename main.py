@@ -1,8 +1,6 @@
-from fileinput import filename
-
 from dotenv import load_dotenv
 import os
-from google import genai
+#from google import genai
 from openai import OpenAI
 import base64
 import json
