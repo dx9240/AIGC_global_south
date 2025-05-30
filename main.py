@@ -1,6 +1,6 @@
 from dotenv import load_dotenv
 import os
-#from google import genai
+# from google import genai
 from openai import OpenAI
 import base64
 import json
@@ -13,9 +13,11 @@ system_prompt = "You are a professional art critic specialized in art images fro
 user_prompt = "Please analyze this image."
 artwork = r"C:\Users\at1e18\OneDrive - University of Southampton\Documents\Lesia\2025_files\programming projects\global_south_AIGC\Dataset\Wai_Ming\Wai_Ming_04.jpg"
 
-#function to log LLM output
-#cosine similarity...an idea for later...
-def log_openai_response(response, system_prompt=system_prompt, user_prompt=user_prompt, artwork=artwork, system_prompt_version="N/A", user_prompt_version="N/A", notes=""):
+
+# function to log LLM output
+# cosine similarity...an idea for later...
+def log_openai_response(response, system_prompt=system_prompt, user_prompt=user_prompt, artwork=artwork,
+                        system_prompt_version="N/A", user_prompt_version="N/A", notes=""):
     log_entry = {
         "response_id": response.id,
         "model": response.model,
@@ -36,7 +38,9 @@ def log_openai_response(response, system_prompt=system_prompt, user_prompt=user_
     }
     return log_entry
 
-def request_openai(openai_api_key=openai_api_key, system_prompt=system_prompt, user_prompt=user_prompt, artwork=artwork, system_prompt_version="N/A", user_prompt_version="N/A", llm_model="gpt-4o", notes=""):
+
+def request_openai(openai_api_key=openai_api_key, system_prompt=system_prompt, user_prompt=user_prompt, artwork=artwork,
+                   system_prompt_version="N/A", user_prompt_version="N/A", llm_model="gpt-4o", notes=""):
     # open image
     with open(artwork, "rb") as img_file:
         image_bytes = img_file.read()
@@ -45,7 +49,7 @@ def request_openai(openai_api_key=openai_api_key, system_prompt=system_prompt, u
     # send info and get response
     client = OpenAI(api_key=openai_api_key)
     response = client.responses.create(
-        model= llm_model,
+        model=llm_model,
         input=[
             {"role": "system", "content": system_prompt},
             {
@@ -69,22 +73,17 @@ def request_openai(openai_api_key=openai_api_key, system_prompt=system_prompt, u
     return log_data
 
 
-
-#get the openAI response API log data and print it to file
+# get the openAI response API log data and print it to file
 def print_log_data_to_file(log_data, log_file="openai_log_file.jsonl"):
     log_file_openai = log_file
     with open(log_file, "a", encoding="utf-8") as f:
-        f.write(json.dumps(log_data)+ "\n")
+        f.write(json.dumps(log_data) + "\n")
 
 
 log_data = request_openai(notes="testing code")
 print_log_data_to_file(log_data)
 
-
-
-
-
-#Use Gemini
+# Use Gemini
 # client = genai.Client(api_key=gemini_api_key)
 #
 # my_file = client.files.upload(file=artwork)
