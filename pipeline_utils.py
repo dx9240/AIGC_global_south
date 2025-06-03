@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Iterable
 
 # TODO deal with exceptions
 # TODO connect to the APIs
@@ -6,24 +7,23 @@ from pathlib import Path
 # This is code for iterating through a dataset folder and getting the paths to image files.
 # The image paths will be batch (or whatever) fed into the API. For example, all the image paths from a dataset will be
 # collected, paired with prompts, and passed to the OpenAI API.
-dataset_path = r"C:\Users\at1e18\OneDrive - University of Southampton\Documents\Lesia\2025_files\programming projects\global_south_AIGC\Dataset"
 
-image_extensions = [".jpg", ".jpeg", ".png"]
-# list of all the image paths
-image_paths = []
+image_extensions = {".jpg", ".jpeg", ".png"}
 
-# get the path to each image in the dataset anf go through all subfolders
-dataset_folder = Path(dataset_path)
-all_paths = dataset_folder.rglob("*")
-for p in all_paths:
-    file_extension = p.suffix.lower()
-    # only keep the image files
-    if file_extension in image_extensions:
-        image_paths.append(p)
+def iter_image_paths(dataset_root: str | Path) -> Iterable[Path]:
+    """
+    Function to iterate through dataset folder and subfolders and get the paths to image files.
+    Works for both strings and paths.
 
-# print the paths and the total number of paths collected
-image_counter = 0
-for i in image_paths:
-    image_counter += 1
-    print(i)
-print(image_counter)
+    :param dataset_root: Path to the top-level dataset folder. Accepts either a raw
+        string or a ``pathlib.Path`` object.
+
+    :return: Iterable[pathlib.Path]
+        A **lazy** iterable (generator) that produces ``Path`` objects
+        pointing to image files whose extensions are in ``image_extensions``.
+        Convert to a list if you need all the paths at once.
+    """
+    root = Path(dataset_root)
+    for p in root.rglob("*"):
+        if p.suffix.lower() in image_extensions:
+            yield p
