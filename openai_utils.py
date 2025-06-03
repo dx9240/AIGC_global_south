@@ -86,15 +86,17 @@ def print_log_data_to_file(log_data, log_file="openai_log_file.jsonl"):
     with open(log_file, "a", encoding="utf-8") as f:
         f.write(json.dumps(log_data) + "\n")
 
+
 def call_and_write_to_log_process(*, system_prompt, user_prompt, artwork,
-                   system_prompt_version="N/A", user_prompt_version="N/A", llm_model="gpt-4o", notes="", log_file="openai_log_file.jsonl", api_key=openai_api_key):
+                                  system_prompt_version="N/A", user_prompt_version="N/A", llm_model="gpt-4o", notes="",
+                                  log_file="openai_log_file.jsonl", api_key=openai_api_key):
     """Function to connect other functions into one larger action: input prompting configuration info and path to image
         file into the function. This then gets sent to the OpenAI API. You get a line in a .jsonl log file back. In this
         file you will find the info such as the text that was generated based on the input prompt, and the file path to
         the image."""
     log_data = request_openai(api_key=api_key, system_prompt=system_prompt, user_prompt=user_prompt, artwork=artwork,
-                   system_prompt_version=system_prompt_version, user_prompt_version=user_prompt_version, llm_model=llm_model, notes=notes)
+                              system_prompt_version=system_prompt_version, user_prompt_version=user_prompt_version,
+                              llm_model=llm_model, notes=notes)
     print_log_data_to_file(log_data, log_file)
-
 
 # TODO cosine similarity...an idea for later?
