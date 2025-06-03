@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import Iterable
+from PIL import Image, UnidentifiedImageError
 
 # TODO deal with exceptions
 # TODO connect to the APIs
@@ -27,3 +28,23 @@ def iter_image_paths(dataset_root: str | Path) -> Iterable[Path]:
     for p in root.rglob("*"):
         if p.suffix.lower() in image_extensions:
             yield p
+
+
+
+def is_valid_image(path: Path) -> bool:
+    """
+    Function to check if a path is a valid image file.
+
+    """
+    try:
+        with Image.open(path) as img:
+            # cheap header check; doesn’t decode full image
+            img.verify()
+        # no exception, therefore looks valid
+        return True
+    except (UnidentifiedImageError, OSError):
+        return False
+
+bad = [p for p in iter_image_paths("Dataset") if not is_valid_image(p)]
+print("Corrupt images:", bad)
+
