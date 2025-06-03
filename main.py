@@ -4,6 +4,7 @@ from openai_utils import request_openai
 from pathlib import Path
 from tqdm import tqdm
 
+
 # prompts and image to be sent to the API
 system_prompt = "You are a professional art critic specialized in art images from the Global South. When given an image, apply your formal art analysis expertise to analyze images, and then compose a write-up your analysis in 5-7 sentences.  Output this write-up only."
 user_prompt = "Please analyze this image."
@@ -49,7 +50,7 @@ done_paths_set = images_already_done(Path(log_file))
 # collect a list of all image paths that still need processing
 images_to_process = []
 
-for image_path in pipeline_utils.iter_image_paths(test_path):
+for image_path in pipeline_utils.iter_image_paths(dataset_path):
     if str(image_path) not in done_paths_set:
         images_to_process.append(image_path)
 
@@ -67,7 +68,7 @@ for image_path in images_to_process:
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         artwork=image_path,
-        notes="Default OpenAI settings. Testing to see if batch processing works.")
+        notes="Default OpenAI settings. Initial batch to test if uploading to API and processing works.")
     # Append the resulting dict (plus metadata) to the JSONL file
     openai_utils.print_log_data_to_file(log_entry, log_file)
     # add to the progress bar by one
