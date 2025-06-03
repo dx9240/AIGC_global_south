@@ -11,6 +11,7 @@ from PIL import Image, UnidentifiedImageError
 
 image_extensions = {".jpg", ".jpeg", ".png"}
 
+
 def iter_image_paths(dataset_root: str | Path) -> Iterable[Path]:
     """
     Function to iterate through dataset folder and subfolders and get the paths to image files.
@@ -30,7 +31,6 @@ def iter_image_paths(dataset_root: str | Path) -> Iterable[Path]:
             yield p
 
 
-
 def is_valid_image(path: Path) -> bool:
     """
     Function to check if a path is a valid image file.
@@ -45,6 +45,6 @@ def is_valid_image(path: Path) -> bool:
     except (UnidentifiedImageError, OSError):
         return False
 
+# test an image to check if it's valid
 bad = [p for p in iter_image_paths("Dataset") if not is_valid_image(p)]
 print("Corrupt images:", bad)
-
