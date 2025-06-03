@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Iterable
-from PIL import Image, UnidentifiedImageError
+import mimetypes, base64
+
 
 # TODO deal with exceptions
 # TODO connect to the APIs
@@ -30,21 +31,21 @@ def iter_image_paths(dataset_root: str | Path) -> Iterable[Path]:
         if p.suffix.lower() in image_extensions:
             yield p
 
-
-def is_valid_image(path: Path) -> bool:
-    """
-    Function to check if a path is a valid image file.
-
-    """
-    try:
-        with Image.open(path) as img:
-            # cheap header check; doesn’t decode full image
-            img.verify()
-        # no exception, therefore looks valid
-        return True
-    except (UnidentifiedImageError, OSError):
-        return False
-
 # test an image to check if it's valid
-bad = [p for p in iter_image_paths("Dataset") if not is_valid_image(p)]
-print("Corrupt images:", bad)
+#bad = [p for p in iter_image_paths("Dataset") if not is_valid_image(p)]
+#print("Corrupt images:", bad)
+
+def encode_image_as_data_uri(path: Path) -> str:
+    """
+    Function to encode an image file into a data URI.
+    Some of the images in my test dataset have an issue being sent to OpenAI API, and this function is made to solve
+    that issue by labeling each file with its MIME type.
+
+    :param path: Path to the image file.
+
+    """
+    mime, _ = mimetypes.guess_type(path)
+    mime = mime or "image/jpeg"          # sensible fallback
+    with path.open("rb") as f:
+        b64 = base64.b64encode(f.read()).decode()
+    return f"data:{mime};base64,{b64}"
