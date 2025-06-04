@@ -44,8 +44,11 @@ def encode_image_as_data_uri(path: Path) -> str:
     :param path: Path to the image file.
 
     """
+    path = Path(path)
     mime, _ = mimetypes.guess_type(path)
-    mime = mime or "image/jpeg"          # sensible fallback
+    # sensible fallback
+    mime = mime or "image/jpeg"
     with path.open("rb") as f:
         b64 = base64.b64encode(f.read()).decode()
     return f"data:{mime};base64,{b64}"
+
