@@ -3,6 +3,8 @@ import base64
 import json
 from dotenv import load_dotenv
 import os
+import pipeline_utils
+from pathlib import Path
 
 load_dotenv()
 
@@ -18,13 +20,9 @@ def request_openai(*, api_key=openai_api_key, system_prompt, user_prompt, artwor
     :arg: artwork must be a link to an image
     :return: input sent to the API and selected info from the API response.
     """
-    # open image
-    with open(artwork, "rb") as img_file:
-        image_bytes = img_file.read()
-        image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-
     # send info and get response
     client = OpenAI(api_key=api_key)
+    image_url = pipeline_utils.encode_image_as_data_uri(Path(artwork))
     response = client.responses.create(
         model=llm_model,
         input=[
@@ -32,7 +30,7 @@ def request_openai(*, api_key=openai_api_key, system_prompt, user_prompt, artwor
             {
                 "role": "user",
                 "content": [
-                    {"type": "input_image", "image_url": f"data:image/png;base64,{image_base64}"},
+                    {"type": "input_image", "image_url": f"data:image/png;base64,{image_url}"},
                     {"type": "input_text", "text": user_prompt}
                 ]
             }
