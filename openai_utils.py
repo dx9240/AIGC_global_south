@@ -1,13 +1,12 @@
 from openai import OpenAI
-import base64
 import json
 from dotenv import load_dotenv
 import os
 import pipeline_utils
 from pathlib import Path
 
-load_dotenv()
 
+load_dotenv()
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
 
@@ -23,17 +22,23 @@ def request_openai(*, api_key=openai_api_key, system_prompt, user_prompt, artwor
     # send info and get response
     client = OpenAI(api_key=api_key)
     image_url = pipeline_utils.encode_image_as_data_uri(Path(artwork))
-    response = client.responses.create(
+
+    response = client.chat.completions.create(
         model=llm_model,
-        input=[
+        # chat completions doesn't support temp, top_p and max.token changing. Responses API does
+        temperature=0.7,
+        top_p=0.95,
+        max_tokens=600,
+        messages=[
             {"role": "system", "content": system_prompt},
             {
                 "role": "user",
                 "content": [
-                    {"type": "input_image", "image_url": f"data:image/png;base64,{image_url}"},
-                    {"type": "input_text", "text": user_prompt}
-                ]
-            }
+                    {"type": "image_url",
+                     "image_url": {"url": image_url}},
+                    {"type": "text", "text": user_prompt},
+                ],
+            },
         ],
     )
     # API response and other info needed to be logged
@@ -62,15 +67,15 @@ def log_openai_response(*, response, system_prompt, user_prompt, artwork,
         "system_prompt": system_prompt,
         "user_prompt_version": user_prompt_version,
         "user_prompt": user_prompt,
-        "output_text": response.output[0].content[0].text,
-        "temperature": response.temperature,
-        "top_p": response.top_p,
+        "output_text": response.choices[0].message.content,
+        "temperature": 0.7,
+        "top_p": 0.95,
         "image_path": str(artwork),
         "notes": notes,
-        "timestamp": response.created_at,
-        "max_tokens": response.max_output_tokens,
-        "input_tokens": response.usage.input_tokens,
-        "output_tokens": response.usage.output_tokens,
+        "timestamp": response.created,
+        "max_tokens": 600,
+        "prompt_tokens": response.usage.prompt_tokens,
+        "completion_tokens": response.usage.completion_tokens,
         "total_tokens": response.usage.total_tokens,
     }
     return log_entry
@@ -96,5 +101,7 @@ def call_and_write_to_log_process(*, system_prompt, user_prompt, artwork,
                               system_prompt_version=system_prompt_version, user_prompt_version=user_prompt_version,
                               llm_model=llm_model, notes=notes)
     print_log_data_to_file(log_data, log_file)
+
+
 
 # TODO cosine similarity...an idea for later?
