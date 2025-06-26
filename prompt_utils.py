@@ -8,9 +8,8 @@ text_2 = "An ancient, blue maple tree clinging to a cliff, overlooking a purple 
 
 synthetic_1 = "This painting embodies the traditional Chinese landscape style, known as \"shan shui,\" which translates to \"mountain-water.\" The use of vibrant blues and greens creates a serene and harmonious atmosphere, emphasizing the natural beauty of the scene. The waterfall acts as a focal point, drawing the viewer's eye through the composition and symbolizing the flow of life. The subtle inclusion of human figures at the bottom of the painting adds a sense of scale and highlights humanity's smallness in the face of nature's grandeur. The misty mountains in the background suggest depth and evoke a sense of mystery and tranquility. Overall, the artwork beautifully captures the essence of nature's majesty and the traditional aesthetic values of Chinese landscape painting."
 synthetic_2 = "This artwork presents a striking interplay between the realistic depiction of the human form and abstract elements. The central figure, a woman, is portrayed with a dramatic sense of movement and emotion, her body draped in a white garment accentuated by vivid red fabric. The red not only serves as a visual anchor but also adds a sense of urgency and intensity to the composition. The reaching hand, seemingly emerging from the background, introduces a narrative tension, suggesting themes of escape or entanglement."
-synthetic_3 = "The artist skillfully blends realism with abstraction, as seen in the loose brushstrokes and blurred lines on the left side, which contrast with the detailed rendering of the woman's form. This juxtaposition creates a dynamic visual tension, inviting viewers to contemplate the relationship between the tangible and the ethereal."
 
-doc = nlp(synthetic_3)
+doc = nlp(text_1)
 
 # Noun chunks - lemmatized head nouns
 noun_chunks = set(chunk.lemma_.lower() for chunk in doc.noun_chunks)
@@ -30,11 +29,11 @@ named_entities = set(
     ent.text.lower() for ent in doc.ents if ent.label_ in entity_labels
 )
 
-print("NOUNs")
+print("NOUN CHUNKS")
 print(noun_chunks)
 
 print("SPECIFIC NOUNS")
-print(extract_meaningful_nouns(synthetic_3))
+print(extract_meaningful_nouns(text_1))
 
 print("ENTITIES")
 print(named_entities)
