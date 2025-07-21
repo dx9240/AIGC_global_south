@@ -2,9 +2,9 @@ import spacy
 from sympy.codegen import Print
 import faiss # this library might run into problems running on windows - try linux or mac instead if you have issues
 from openai import OpenAI
-from openai_utils import openai_api_key
 import json
 import requests
+from openai_utils import openai_api_key
 
 text_1 = "A mature woman wearing a blue silk sari standing against a background of moonlit Jaipur."
 text_2 = "An ancient, blue maple tree clinging to a cliff, overlooking a purple lake. There is blue moss growing on the cliff, two crescent moons and jupiter in the sky, and a spaceship flying across the sky in the distance. The painting is in a traditional Chinese style, with futuristic caligraphy."
@@ -52,62 +52,48 @@ synthetic_2 = "This artwork presents a striking interplay between the realistic 
 #index = faiss.IndexFlatL2(1536)
 #print(index.is_trained)
 
-# 1. Generate vector embeddings
-# 2. Store them in OpenAI vector store
+
 # 3. Take a user prompt → embed → search
 # 4. Return top-k most similar captions
-
-# extract the synthetic captions from the json file where they are logged and store in a list
-synthetic_log = "20250604_openai_log.jsonl"
-vector_store_upload = "vector_store_upload.json"
-with open(synthetic_log, "r", encoding="utf-8") as infile, open(vector_store_upload, "w", encoding="utf-8") as outfile:
-    for line in infile:
-        data = json.loads(line)
-        if "output_text" in data:
-            caption = data["output_text"]
-        json.dump({
-            "text": caption,
-            "metadata": {"text": caption}  # metadata mirrors the text
-        }, outfile)
-        outfile.write("\n")
-
-# set up vector store
-client = OpenAI(api_key=openai_api_key)
-# variable 'response' contains the vector store's ID. Access the ID with vector_store_id
-synthetic_store_response = client.vector_stores.create(
-    name="synthetic_captions_vector_store",
-    #optional line of code - vector store is deleted from openAI after 30 days
-    expires_after={
-    "anchor": "last_active_at",
-        "days": 1}
-    )
-synthetic_store_id = synthetic_store_response.id
-
-# consider expanding metadata tags or scope for a formal art and global south art domain-specific ontology to access more specific terms, in order to generate better images
-with open(vector_store_upload, "rb") as f:
-    file_upload_response = client.vector_stores.file_batches.upload_and_poll(
-        vector_store_id=synthetic_store_id,
-        files=[f]
-    )
 
 # # check out the vector store
 # file_list = client.vector_stores.files.list(vector_store_id=synthetic_store_id)
 # print(file_list)
 
 # search vector store
-query = "a woman sitting"
+client = OpenAI(api_key=openai_api_key)
+config_file = "config.json"
 
-headers = {
-    "Authorization": f"Bearer {openai_api_key}",
-    "Content-Type": "application/json"
-}
+# function to get the vector store ID from the config file
+def get_vector_store_id(config_path):
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
+            return config.get("vector_store_id")
+    except FileNotFoundError:
+        print(f"Error: Configuration file '{config_path}' not found. It's possible that the vector store has been automatically deleted")
+        print("run the 'setup_vector_store.py' file to set up a vector store and store the vector store ID in the config file")
+        return None
 
-response = requests.post(
-    f"https://api.openai.com/v1/vector_stores/{synthetic_store_id}/search",
-    headers=headers,
-    json={"query": query}
+# search for the most similar matches to the user prompt in the vector store. the API returns the top 10 most similar matches.
+user_prompt = "In a regal and harmonious mood, make a detailed gongbi painting of the Forbidden City at sunrise, with golden rooftops glowing against vermilion walls. There should be famous animals in the Ming Dynasty hanfu strolling through courtyards adorned with peony blossoms. The artwork should include intricate lattice windows and cranes symbolising longevity, and the palette should be of vermilion, jade green, and gold."
+# Load the ID from our config file.
+vector_store_id = get_vector_store_id(config_file)
+#search the vector store to match the user prompt
+search_results = client.vector_stores.search(
+  vector_store_id=vector_store_id,
+  query=user_prompt
 )
 
+# iterate through and print search results
+for result in search_results:
+    print("--- Result ---")
+    print(f"Similarity Score: {result.score:.4f}")
 
-results = response.json()
-print(results)
+    # The .content attribute is a LIST of chunks. We need to loop through it.
+    print("Content:")
+    for chunk in result.content:
+        # Now 'chunk' is the object with the .text attribute
+        print(chunk.text)
+
+    print()  # Add a newline for cleaner separation between results
