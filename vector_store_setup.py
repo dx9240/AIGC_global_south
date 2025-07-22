@@ -14,10 +14,7 @@ with open(synthetic_log, "r", encoding="utf-8") as infile, open(vector_store_upl
             data = json.loads(line)
             if "output_text" in data:
                 caption = data["output_text"]
-                json.dump({
-                "text": caption,
-                "metadata": {"text": caption}  # metadata mirrors the text
-            }, outfile)
+                json.dump({"text": caption}, outfile)
             outfile.write("\n")
         except json.JSONDecodeError:
             print(f"Skipping malformed line: {line.strip()}")
