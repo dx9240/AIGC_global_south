@@ -9,5 +9,5 @@ If you need to manage the vector store, it can be done through the OpenAI Playgr
 
 ## Output Examples
 
-Screenshot showing the returned results of a similarity search from the vector store, where results are synthetic captions which are matched for cosine similarity with a user prompt. The normalized cosine similarity score is displayed.
+Screenshot 1 showing the returned results of a similarity search from the vector store, where results are synthetic captions which are matched for cosine similarity with a user prompt. The normalized cosine similarity score is displayed.
 ![screenshot_1.png](screenshot_1.png)
