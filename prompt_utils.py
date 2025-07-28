@@ -6,6 +6,8 @@ import json
 import requests
 from openai_utils import openai_api_key
 
+# some testing prompts
+shepuya_prompt = "In a regal and harmonious mood, make a detailed gongbi painting of the Forbidden City at sunrise, with golden rooftops glowing against vermilion walls. There should be famous animals in the Ming Dynasty hanfu strolling through courtyards adorned with peony blossoms. The artwork should include intricate lattice windows and cranes symbolising longevity, and the palette should be of vermilion, jade green, and gold."
 text_1 = "A mature woman wearing a blue silk sari standing against a background of moonlit Jaipur."
 text_2 = "An ancient, blue maple tree clinging to a cliff, overlooking a purple lake. There is blue moss growing on the cliff, two crescent moons and jupiter in the sky, and a spaceship flying across the sky in the distance. The painting is in a traditional Chinese style, with futuristic caligraphy."
 
@@ -76,7 +78,7 @@ def get_vector_store_id(config_path):
         return None
 
 # search for the most similar matches to the user prompt in the vector store. the API returns the top 10 most similar matches.
-user_prompt = "In a regal and harmonious mood, make a detailed gongbi painting of the Forbidden City at sunrise, with golden rooftops glowing against vermilion walls. There should be famous animals in the Ming Dynasty hanfu strolling through courtyards adorned with peony blossoms. The artwork should include intricate lattice windows and cranes symbolising longevity, and the palette should be of vermilion, jade green, and gold."
+user_prompt = text_1
 # Load the ID from our config file.
 vector_store_id = get_vector_store_id(config_file)
 #search the vector store to match the user prompt
@@ -86,8 +88,9 @@ search_results = client.vector_stores.search(
 )
 
 # iterate through and print search results
+print(f"User Prompt: {user_prompt} \n")
 for result in search_results:
-    print("--- Result ---")
+    print("--- Vector Search Results ---")
     print(f"Similarity Score: {result.score:.4f}")
 
     # The .content attribute is a LIST of chunks. We need to loop through it.
