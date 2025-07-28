@@ -6,3 +6,8 @@ https://spacy.io/models/en
 Run the file vector_store_setup.py to set up the vector store and add the synthetic captions. This file creates a config.json file which contains the vector store ID. This ID is needed to use the vector store in the cosine similarity search task. By default, the file sets the vector store to be deleted after 30 days, but this can be changed.
 
 If you need to manage the vector store, it can be done through the OpenAI Playground GUI. While the config file overwrites previous vector store IDs with the newest one, the code doesn't yet manage deleting vector stores. Current work-around: vector store can be deleted through the OPenAI Playground GUI.
+
+## Output Examples
+
+Screenshot showing the returned results of a similarity search from the vector store, where results are synthetic captions which are matched for cosine similarity with a user prompt. The normalized cosine similarity score is displayed.
+![img.png](img.png)
