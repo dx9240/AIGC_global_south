@@ -15,8 +15,9 @@ nlp = spacy.load("en_core_web_trf")
 
 def nlp_processing(text):
     """
-    Processes a single text string to extract head nouns
-    and named entities.
+    Processes a single text string to extract head nouns and named entities.
+    Takes a string to process as input.
+    Returns dict of extracted results.
     """
     # Create the spaCy doc object once
     doc = nlp(text)
@@ -39,44 +40,58 @@ def nlp_processing(text):
         "entities": named_entities
     }
 
-print(nlp_processing(text_2))
+
+# function to get the vector store ID from the config file
+def get_vector_store_id(config_path):
+    try:
+        with open(config_path, "r") as f:
+            config = json.load(f)
+            return config.get("vector_store_id")
+    except FileNotFoundError:
+        print(f"Error: Configuration file '{config_path}' not found. It's possible that the vector store has been automatically deleted")
+        print("run the 'setup_vector_store.py' file to set up a vector store and store the vector store ID in the config file")
+        return None
+
+
+def vector_search(store_id, query):
+    """
+    Function to search a vector store with a given query.
+    Takes OpenAI API vector store ID, and a string query as arguments.
+    Returns the OpenAI API response which contains the top 10 vector search results based on normalized cosine similarity.
+
+    """
+    #search the vector store to match the user prompt
+    search_results = client.vector_stores.search(
+      vector_store_id=vector_store_id,
+      query=user_prompt
+    )
+    return search_results
+
+
+def vector_search_results_printer(search_response):
+    """
+    Function to print the results of a vector search.
+    Takes OpenAI API vector search response as input and prints the top 10 vector search results based on normalized cosine similarity.
+    """
+    # iterate through the returned response and print search results
+    print(f"User Prompt: {user_prompt} \n")
+    for result in search_response:
+        print("--- Vector Search Results ---")
+        print(f"Similarity Score: {result.score:.4f}")
+        # The .content attribute is a LIST of chunks. We need to loop through it.
+        print("Content:")
+        for chunk in result.content:
+            # Now 'chunk' is the object with the .text attribute
+            print(chunk.text)
+        print()  # Add a newline for cleaner separation between results
 
 
 # search vector store
 client = OpenAI(api_key=openai_api_key)
+# Load the ID from config file.
 config_file = "config.json"
-
-# function to get the vector store ID from the config file
-# def get_vector_store_id(config_path):
-#     try:
-#         with open(config_path, "r") as f:
-#             config = json.load(f)
-#             return config.get("vector_store_id")
-#     except FileNotFoundError:
-#         print(f"Error: Configuration file '{config_path}' not found. It's possible that the vector store has been automatically deleted")
-#         print("run the 'setup_vector_store.py' file to set up a vector store and store the vector store ID in the config file")
-#         return None
-#
-# # search for the most similar matches to the user prompt in the vector store. the API returns the top 10 most similar matches.
-# user_prompt = text_2
-# # Load the ID from our config file.
-# vector_store_id = get_vector_store_id(config_file)
-# #search the vector store to match the user prompt
-# search_results = client.vector_stores.search(
-#   vector_store_id=vector_store_id,
-#   query=user_prompt
-# )
-#
-# # iterate through and print search results
-# print(f"User Prompt: {user_prompt} \n")
-# for result in search_results:
-#     print("--- Vector Search Results ---")
-#     print(f"Similarity Score: {result.score:.4f}")
-#
-#     # The .content attribute is a LIST of chunks. We need to loop through it.
-#     print("Content:")
-#     for chunk in result.content:
-#         # Now 'chunk' is the object with the .text attribute
-#         print(chunk.text)
-#
-#     print()  # Add a newline for cleaner separation between results
+vector_store_id = get_vector_store_id(config_file)
+# search for the most similar matches to the user prompt in the vector store.
+user_prompt = text_2
+search_results = vector_search(vector_store_id, user_prompt)
+vector_search_results_printer(search_results)
