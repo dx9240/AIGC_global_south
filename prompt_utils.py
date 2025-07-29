@@ -151,7 +151,7 @@ search_results = vector_search(vector_store_id, user_prompt)
 final_scores = get_comparison_scores(user_prompt, search_results)
 
 
-# Print the final results with cosine similarity and jaccard simialrity scores
+# Print the final results with cosine similarity and jaccard simialrity scores.
 print(f"--- Comparison for Prompt: '{user_prompt[:50]}...' ---\n")
 for item in final_scores:
     # Access the nested dictionary for Jaccard scores
