@@ -62,19 +62,21 @@ def vector_search(store_id, query):
     """
     #search the vector store to match the user prompt
     search_results = client.vector_stores.search(
-      vector_store_id=vector_store_id,
-      query=user_prompt
+      vector_store_id=store_id,
+      query=query
     )
     return search_results
 
 
-def vector_search_results_printer(search_response):
+def vector_search_results_printer(query, search_response):
     """
     Function to print the results of a vector search.
-    Takes OpenAI API vector search response as input and prints the top 10 vector search results based on normalized cosine similarity.
+    Takes the search query as input so that it can be shown alongside the search results.
+    Also takes OpenAI API vector search response as input and prints the top 10 vector search results based on normalized cosine similarity.
+
     """
     # iterate through the returned response and print search results
-    print(f"User Prompt: {user_prompt} \n")
+    print(f"User Prompt: {query} \n")
     for result in search_response:
         print("--- Vector Search Results ---")
         print(f"Similarity Score: {result.score:.4f}")
@@ -86,6 +88,58 @@ def vector_search_results_printer(search_response):
         print()  # Add a newline for cleaner separation between results
 
 
+def calculate_jaccard_similarity(set_a, set_b):
+    """
+    Calculates the Jaccard Similarity between two sets. Use this to compare keywords between two sets.
+    """
+    intersection = set_a.intersection(set_b)
+    union = set_a.union(set_b)
+    if not union:
+        return 0.0
+    return len(intersection) / len(union)
+
+
+def get_comparison_scores(user_prompt, search_response):
+    """
+    Compares a user prompt to each search result to get both cosine
+    and Jaccard similarity scores for nouns, noun chunks, and entities.
+    """
+    # nlp process the user's prompt
+    prompt_nlp_data = nlp_processing(user_prompt)
+    prompt_nouns = prompt_nlp_data['nouns']
+    prompt_chunks = prompt_nlp_data['noun_chunks']
+    prompt_entities = prompt_nlp_data['entities']
+    final_results = []
+
+    # Loop through each search result
+    for result in search_response:
+        caption_text = " ".join(chunk.text for chunk in result.content)
+
+        # nlp process the caption returned in the search
+        caption_nlp_data = nlp_processing(caption_text)
+        caption_nouns = caption_nlp_data['nouns']
+        caption_chunks = caption_nlp_data['noun_chunks']
+        caption_entities = caption_nlp_data['entities']
+
+        # Compare overlap in keywords and phrases by calculating Jaccard score for each category
+        jaccard_score_nouns = calculate_jaccard_similarity(prompt_nouns, caption_nouns)
+        jaccard_score_chunks = calculate_jaccard_similarity(prompt_chunks, caption_chunks)
+        jaccard_score_entities = calculate_jaccard_similarity(prompt_entities, caption_entities)
+
+        # Store all scores together in a structured dictionary
+        final_results.append({
+            "text": caption_text,
+            "cosine_score": result.score,
+            "jaccard_scores": {
+                "nouns": jaccard_score_nouns,
+                "noun_chunks": jaccard_score_chunks,
+                "entities": jaccard_score_entities
+            }
+        })
+
+    return final_results
+
+
 # search vector store
 client = OpenAI(api_key=openai_api_key)
 # Load the ID from config file.
@@ -94,4 +148,17 @@ vector_store_id = get_vector_store_id(config_file)
 # search for the most similar matches to the user prompt in the vector store.
 user_prompt = text_2
 search_results = vector_search(vector_store_id, user_prompt)
-vector_search_results_printer(search_results)
+final_scores = get_comparison_scores(user_prompt, search_results)
+
+
+# Print the final results with cosine similarity and jaccard simialrity scores
+print(f"--- Comparison for Prompt: '{user_prompt[:50]}...' ---\n")
+for item in final_scores:
+    # Access the nested dictionary for Jaccard scores
+    j_scores = item['jaccard_scores']
+
+    print(f"Cosine Score: {item['cosine_score']:.4f}")
+    print(f"Jaccard (Nouns): {j_scores['nouns']:.4f}")
+    print(f"Jaccard (Chunks): {j_scores['noun_chunks']:.4f}")
+    print(f"Jaccard (Entities): {j_scores['entities']:.4f}")
+    print(f"Text: \"{item['text'][:100]}...\"\n")
