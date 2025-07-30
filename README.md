@@ -11,3 +11,7 @@ If you need to manage the vector store, it can be done through the OpenAI Playgr
 
 Screenshot 1 showing the returned results of a similarity search from the vector store, where results are synthetic captions which are matched for cosine similarity with a user prompt. The normalized cosine similarity score is displayed.
 ![screenshot_1.png](screenshot_1.png)
+
+
+Screenshot 2 shows the same information as Screenshot 1, but with additional Jaccard similarity scores which represent overlaps between exact words and phrases (nouns, noun chunks/NPs, and named entities) between the user prompt and the synthetic captions. Thus, these scores show synthetic captions similarity to the user prompt based on a hybrid approach of semantic similarity and exact matches.
+![screenshot_2.png](screenshot_2.png)
